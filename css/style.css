@@ -1,0 +1,168 @@
+		table{ 
+			width: 450px; 
+			border-collapse: collapse; 
+			margin:10px auto;
+			}
+		th { 
+			background: #7d81e8; 
+			color: white; 
+			font-weight: bold; 
+			}
+
+		td, th { 
+			padding: 10px; 
+			border: 1px solid #000; 
+			text-align: left; 
+			font-size: 18px;
+			}
+		#addNewTask {
+			width: 100%;
+			border-radius: 5px;	
+			margin-bottom: 10px;
+			height:30px;
+			padding:3px;
+		}
+		 .success,
+         .warning,
+         .secondary {
+            color: white;
+            border-radius: 4px;
+			cursor: pointer;
+			width: 32%;
+			padding:5px;
+         }
+         
+         .success {
+            background: rgb(141, 218, 159); 
+         }
+         .warning {
+            background: rgb(232, 184, 139); 
+         }
+
+         .secondary {
+            background: rgb(204, 204, 204);
+         }
+         .large {
+            font-size: 90%;
+         }
+		
+		a {
+			color: Red;
+			cursor:pointer;
+		}
+		.container {
+			display: block;
+			position: relative;
+			padding-left: 35px;
+			margin-bottom: 12px;
+			cursor: pointer;
+			font-size: 22px;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+		
+		#loginShow {
+			width: 750px; 
+			border-collapse: collapse; 
+			margin:10px auto;
+		}
+
+		input[type=text], input[type=password] {
+			width: 100%;
+			padding: 12px 20px;
+			margin: 8px 0;
+			display: inline-block;
+			border: 1px solid #ccc;
+			box-sizing: border-box;
+		}
+
+		button {
+			background-color: #4CAF50;
+			color: white;
+			padding: 14px 20px;
+			margin: 8px 0;
+			border: none;
+			cursor: pointer;
+			width: 100%;
+		}
+
+		button:hover {
+			opacity: 0.8;
+		}
+
+		.cancelbtn {
+			width: auto;
+			padding: 10px 18px;
+			background-color: #f44336;
+		}
+
+		.imgcontainer {
+			text-align: center;
+			margin: 24px 0 12px 0;
+		}
+
+		img.avatar {
+			width: 40%;
+			border-radius: 50%;
+		}
+		span.psw {
+			float: right;
+			padding-top: 16px;
+		}
+
+		@media screen and (max-width: 300px) {
+			span.psw {
+			   display: block;
+			   float: none;
+			}
+			.cancelbtn {
+			   width: 100%;
+			}
+		}
+		.container {
+			padding: 16px;
+			display: block;
+			width: 400px;
+			margin: 100px auto 0;
+		}
+		ul {
+		  margin: 0;
+		  padding: 0;
+		}
+		li * {
+		  float: left;
+		}
+		li label{
+		  margin-left:30px;
+		}
+		li img{
+		  float:right;
+		}
+		li {
+		  overflow: hidden;
+		  padding: 20px 0;
+		  border-bottom: 1px solid #eee;
+		  clear:both;
+		  list-style:none;
+		}
+		li > input[type="checkbox"] {
+		  margin: 0 10px;
+		  position: relative;
+		  top: 15px;
+		}
+		li > label {
+		  font-size: 18px;
+		  line-height: 40px;
+		  width: 237px;
+		  padding: 0 0 0 11px;
+		}
+		.complete > label {
+			text-decoration :line-through;
+			
+		}
+		.all {
+			display :block !important;
+			
+		}
