@@ -1,0 +1,52 @@
+<html>
+<head>
+	<title>
+		To Do list
+	</title>
+	<link rel="stylesheet" href="css/style.css">
+	
+</head>
+<body>
+	<div class="container">
+		<div id="loginShow">
+		  
+			<label for="uname"><b>userName</b></label>
+			<input type="text" id="user" >
+
+			<label for="psw"><b>Password</b></label>
+			<input type="password" id="pass" >
+				
+			<button  id="login">Login</button>
+
+		</div>
+		<div id="taskShow">
+			<table >
+				<tr>
+					<td style="text-align:center;background-color: #7d81e8;color:#fff" id="userProfile">
+					Welcome <span id="userWelcome"> </span> <a id="logout" > LogOut </a>
+					</td>
+				</tr>
+				<tr>
+					<td style="text-align:center;">
+						<input id="addNewTask" type="text"  placeholder="Write new task here"/>
+						<div style="width:100%" >
+						  <button type="button" id="allTaskButton" class="secondary large" >All</button>
+						  <button  type="button" id="completeTaskButton" class="success large" >Complete</button>
+						  <button  type="button" id="activeTaskButton" class="warning large" >Active</button>
+						</div>
+					</td>
+				</tr>
+			</table>
+			<ul id="appendTask">
+			</ul> 
+		</div>
+	</div>	
+		
+		<script src="js/taskModel.js"></script>
+		<script src="js/taskView.js"></script>
+		<script src="js/taskController.js"></script>
+		<script src="js/app.js"></script>
+		
+</body>
+</head>
+</html>
