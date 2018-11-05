@@ -7,7 +7,6 @@
 		this.loginUser = document.querySelector("#login");
 		this.logoutUser = document.querySelector("#logout");
 		this.eventJson=[];
-		this.init();
 	};	
 	taskView.prototype = {
 		init :function () {
@@ -39,7 +38,6 @@
 			},
 			generateTaskUI : function (taskJson) {
 				var taskFunc=this;
-				
 				taskJson.forEach(function(task) {
 						var ulBody = document.getElementById('appendTask');
 						var li=document.createElement("li");
@@ -51,9 +49,10 @@
 						li.appendChild(checkBox);
 						li.appendChild(label);
 						li.appendChild(img);
+						li.setAttribute("id", "taskRecord-"+task['taskID']);
 						label.appendChild (taskName);
-						taskFunc.addEventBinding(checkBox,"changeTaskStatus",task['taskTitle']);
-						taskFunc.addEventBinding(img,"removeTaskRow",task['taskTitle']);
+						taskFunc.addEventBinding(checkBox,"changeTaskStatus",task['taskID']);
+						taskFunc.addEventBinding(img,"removeTaskRow",task['taskID']);
 						checkBox.type="checkbox";
 						img.className="removeTask";
 						img.src="img/cross.png";
@@ -66,6 +65,14 @@
 						}
 					}
 				)
+			},
+			getTaskRecordStatus : function(elementID) {
+				var taskCheckBox = document.querySelector("#taskRecord-"+elementID+" input");
+				if (taskCheckBox.checked == true){
+					return true;
+				} else {
+					return false;
+				}
 			},
 			addEventBinding : function(element,command,arguments) {
 				this.eventJson.push({element:element,command: command,arguments : arguments});

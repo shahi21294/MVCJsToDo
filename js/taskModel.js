@@ -27,16 +27,33 @@ taskModel.prototype = {
 		});
 		for( var i = 0, len = getUserTask.length; i < len; i++ ){
 			if(getUserTask[i].is_completed==='0')
-				generateTask.push({taskTitle:getUserTask[i].value,isComplete:false});
+				generateTask.push({taskID:getUserTask[i].ID,taskTitle:getUserTask[i].value,isComplete:false});
 			else if(getUserTask[i].is_completed==='1')
-				generateTask.push({taskTitle:getUserTask[i].value,isComplete:true});
+				generateTask.push({taskID:getUserTask[i].ID,taskTitle:getUserTask[i].value,isComplete:true});
 		}
 		return generateTask;
 	},
-	getTaskByName : function (name) {
+	getTaskByName : function (taskName) {
 		for( var i = 0, len = this.todos.length; i < len; i++ ){
-				 if(this.todos[i].value === name )
+				 if(this.todos[i].value === taskName )
 					 return i;
 		}
+	},
+	getTaskByID : function (taskID) {
+		for( var i = 0, len = this.todos.length; i < len; i++ ){
+				 if(this.todos[i].ID === taskID )
+					 return i;
+		}
+	},
+	getLastTaskID : function () {
+		var maxTaskID=1;
+		len = this.todos.length; 
+		for( var i = 0; i < len; i++ ){
+				 if(this.todos[i].ID >= maxTaskID ){
+						maxTaskID=this.todos[i].ID+1;
+						
+				 }
+		}
+		return maxTaskID;
 	}
 };	
