@@ -86,7 +86,6 @@
 				return userName+'-'+password;
 			},
 			errorMessage : function (errorCode){
-				console.log(errorCode);
 				if(errorCode){
 					switch (errorCode){
 						case 1: 

@@ -85,7 +85,6 @@ var taskController = function (model, view) {
 				this.init();
 		},
 		filterTask : function (type) {
-			console.log(type);
 			switch (type){
 				case "all": 
 					this.showHideTaskByType("all","block");
