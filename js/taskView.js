@@ -1,12 +1,26 @@
 	var taskView=function(model){
 		this.model=model;
+		
+		this.addNewTaskEvent = new Event(this);
+		this.selectTaskEvent = new Event(this);
+		this.unselectTaskEvent = new Event(this);
+		this.deleteTaskEvent = new Event(this);
+		this.loginUserEvent = new Event(this);
+		this.logOutUserEvent = new Event(this);
+
+		
 		this.taskInput = document.querySelector("#addNewTask");
 		this.allTaskButton = document.querySelector("#allTaskButton");
 		this.completeTaskButton = document.querySelector("#completeTaskButton");
 		this.activeTaskButton = document.querySelector("#activeTaskButton");
-		this.loginUser = document.querySelector("#login");
-		this.logoutUser = document.querySelector("#logout");
+		this.loginUserBtn = document.querySelector("#login");
+		this.logOutUserBtn = document.querySelector("#logout");
+		this.ulBody = document.querySelector('#appendTask');
+		
+		
+		
 		this.eventJson=[];
+		this.init();
 	};	
 	taskView.prototype = {
 		init :function () {
@@ -14,17 +28,21 @@
 					document.getElementById("loginShow").style.display = "none";
 					document.getElementById("taskShow").style.display = "block";
 					document.getElementById("userWelcome").innerHTML = this.model.getUserByID();
-					this.addEventBinding(this.allTaskButton,"filterTaskAll","all");
-					this.addEventBinding(this.completeTaskButton,"filterTaskComplete","complete");
-					this.addEventBinding(this.activeTaskButton,"filterTaskActive","active");	
-					this.addEventBinding(this.taskInput,"taskInput","");	
-					this.addEventBinding(this.logoutUser,"logoutUser","");	
-					this.destroyTask();
-					this.generateTaskUI(this.model.getAllCurrentUserTasks());
+					
+					this.allTaskButton.addEventListener("click", this.filterTask.bind(this,"all"));					
+					this.completeTaskButton.addEventListener("click", this.filterTask.bind(this,"complete"));
+					this.activeTaskButton.addEventListener("click", this.filterTask.bind(this,"active"));
+					
+					
+					this.generateTaskUI();
+						
+					this.fireEvent();
+					
 				} else {
 				   document.getElementById("loginShow").style.display = "block";
 				   document.getElementById("taskShow").style.display = "none";
-				   this.addEventBinding(this.loginUser,"loginUser","");	
+					this.setupLogoutHandlers();	
+					this.fireEvent();	
 				}
 			},
 			clearTaskInput : function (){
@@ -36,35 +54,23 @@
 					tBody.removeChild(tBody.firstChild);
 				}
 			},
-			generateTaskUI : function (taskJson) {
+			generateTaskUI : function () {
+				this.destroyTask();
+				var taskJson=this.model.getAllCurrentUserTasks()
 				var taskFunc=this;
 				taskJson.forEach(function(task) {
-						var ulBody = document.getElementById('appendTask');
-						var li=document.createElement("li");
-						var checkBox=document.createElement("input");
-						var label=document.createElement("label");
-						var img=document.createElement("img");
-						var taskName=document.createTextNode(task['taskTitle']);
-						ulBody.appendChild(li);
-						li.appendChild(checkBox);
-						li.appendChild(label);
-						li.appendChild(img);
-						li.setAttribute("id", "taskRecord-"+task['taskID']);
-						label.appendChild (taskName);
-						taskFunc.addEventBinding(checkBox,"changeTaskStatus",task['taskID']);
-						taskFunc.addEventBinding(img,"removeTaskRow",task['taskID']);
-						checkBox.type="checkbox";
-						img.className="removeTask";
-						img.src="img/cross.png";
 						if(task['isComplete']){
-							checkBox.checked = true;
-							li.className="all complete";
+							taskChecked = "checked";
+							taskLiclassName="all complete";
 						}else{
-							checkBox.checked = false;
-							li.className="all active";
+							taskChecked = "";
+							taskLiclassName="all active";
 						}
+						ulBodytaskHtml='<li class="'+taskLiclassName+'"><input id="taskRecord-'+task['taskID']+'"  class="taskRows" type="checkbox"'+ taskChecked+'><label>'+task['taskTitle']+'</label><img id="taskRecord-'+task['taskID']+'"  class="deleteTask" src="img/cross.png"></li>';
+						taskFunc.ulBody.insertAdjacentHTML("beforeend",ulBodytaskHtml);
 					}
 				)
+				this.setupHandlers();
 			},
 			getTaskRecordStatus : function(elementID) {
 				var taskCheckBox = document.querySelector("#taskRecord-"+elementID+" input");
@@ -74,11 +80,82 @@
 					return false;
 				}
 			},
-			addEventBinding : function(element,command,arguments) {
-				this.eventJson.push({element:element,command: command,arguments : arguments});
+			setupHandlers: function () {
+				var viewObj=this;
+
+				var taskRowsCheckBox = document.querySelectorAll('.taskRows');
+				for (var i = 0; i < taskRowsCheckBox.length; i++) {
+					taskRowsCheckBox[i].addEventListener("change", this.selectOrUnselectTask.bind(this));
+				}
+				var taskRowsDelete = document.querySelectorAll('.deleteTask');
+				for (var i = 0; i < taskRowsDelete.length; i++) {
+					
+					taskRowsDelete[i].addEventListener("click", this.deleteTask.bind(this));
+				}
+				this.taskInput.addEventListener('keydown', function(e) {
+					if (e.which == 13 && e.target.selectionEnd > 0) {
+						if(e.target.value.length > 0  ) {
+							viewObj.addNewTaskEvent.subscribe({
+								taskTitle: e.target.value
+							});
+						}else{
+							viewObj.errorMessage(2);
+						}        
+					}
+				});
+				this.logOutUserBtn.addEventListener("click",this.logOutUser.bind(this));
 			},
-			getEventBinding : function(element,event,func,arguments) {
-				return this.eventJson;
+			setupLogoutHandlers: function () {
+				this.loginUserBtn.addEventListener("click", this.loginUser.bind(this));
+			},
+			fireEvent : function (taskName){
+				this.doneTasksChangeStateHandler = this.doneTasksChangeState.bind(this);
+				this.model.doneTasksChangeState.fire(this.doneTasksChangeStateHandler);
+				this.doneAddNewTaskHandler = this.doneAddNewTask.bind(this);
+				this.model.doneAddNewTask.fire(this.doneAddNewTaskHandler);
+				this.deleteTaskHandler = this.doneDeleteTask.bind(this);
+				this.model.doneDeleteTask.fire(this.deleteTaskHandler);
+				this.doneUserStateHandler = this.doneUserState.bind(this);
+				this.model.doneUserState.fire(this.doneUserStateHandler);
+			},
+			selectOrUnselectTask: function () {
+				var taskID = event.target.id.split("-");
+				if (event.target.checked == true){
+					this.selectTaskEvent.subscribe({
+						taskID: taskID[1]
+					});
+				} else {
+					this.unselectTaskEvent.subscribe({
+						taskID: taskID[1]
+					});
+				}
+			},
+			deleteTask: function () {
+				var taskID = event.target.id.split("-");
+				this.deleteTaskEvent.subscribe({
+					taskID: taskID[1]
+				});
+			},
+			doneDeleteTask: function () {
+				this.generateTaskUI();
+			},
+			doneTasksChangeState: function () {
+				this.generateTaskUI();
+			},
+			doneAddNewTask: function () {
+				this.clearTaskInput();
+				this.generateTaskUI();
+			},
+			loginUser: function () {
+				this.loginUserEvent.subscribe({
+					credential : this.getUserNameAndPasswordInput()
+				});
+			},
+			logOutUser : function () {
+				this.logOutUserEvent.subscribe();
+			},
+			doneUserState: function () {
+				location.reload();
 			},
 			getUserNameAndPasswordInput : function (){
 				var userName = document.getElementById('user').value;
@@ -95,6 +172,21 @@
 							alert("Invalid Task Name");
 						break;
 					}
+				}
+			},
+			filterTask : function (type) {
+				switch (type){
+					case "all": 
+						this.showHideTaskByType("all","block");
+					break;
+					case "complete" : 
+						this.showHideTaskByType("all","none");
+						this.showHideTaskByType("complete","block");
+					break;
+					case "active" :
+						this.showHideTaskByType("all","none");
+						this.showHideTaskByType("active","block");
+					break;
 				}
 			},
 			showHideTaskByType : function (type,displayStyle) {
