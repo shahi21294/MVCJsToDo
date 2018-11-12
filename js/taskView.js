@@ -1,14 +1,7 @@
-	var taskView=function(model){
+	var taskView=function(model,pubSub){
 		this.model=model;
-		
-		this.addNewTaskEvent = new Event(this);
-		this.selectTaskEvent = new Event(this);
-		this.unselectTaskEvent = new Event(this);
-		this.deleteTaskEvent = new Event(this);
-		this.loginUserEvent = new Event(this);
-		this.logOutUserEvent = new Event(this);
+		this.pubSub=pubSub;
 
-		
 		this.taskInput = document.querySelector("#addNewTask");
 		this.allTaskButton = document.querySelector("#allTaskButton");
 		this.completeTaskButton = document.querySelector("#completeTaskButton");
@@ -17,10 +10,10 @@
 		this.logOutUserBtn = document.querySelector("#logout");
 		this.ulBody = document.querySelector('#appendTask');
 		
-		
-		
 		this.eventJson=[];
 		this.init();
+		viewObjs=this;
+		
 	};	
 	taskView.prototype = {
 		init :function () {
@@ -36,13 +29,13 @@
 					
 					this.generateTaskUI();
 						
-					this.fireEvent();
+					this.subscribeEvent();
 					
 				} else {
 				   document.getElementById("loginShow").style.display = "block";
 				   document.getElementById("taskShow").style.display = "none";
 					this.setupLogoutHandlers();	
-					this.fireEvent();	
+					this.subscribeEvent();	
 				}
 			},
 			clearTaskInput : function (){
@@ -95,9 +88,7 @@
 				this.taskInput.addEventListener('keydown', function(e) {
 					if (e.which == 13 && e.target.selectionEnd > 0) {
 						if(e.target.value.length > 0  ) {
-							viewObj.addNewTaskEvent.subscribe({
-								taskTitle: e.target.value
-							});
+							 viewObj.pubSub.publish('addNewTask', e.target.value);
 						}else{
 							viewObj.errorMessage(2);
 						}        
@@ -108,51 +99,39 @@
 			setupLogoutHandlers: function () {
 				this.loginUserBtn.addEventListener("click", this.loginUser.bind(this));
 			},
-			fireEvent : function (taskName){
-				this.doneTasksChangeStateHandler = this.doneTasksChangeState.bind(this);
-				this.model.doneTasksChangeState.fire(this.doneTasksChangeStateHandler);
-				this.doneAddNewTaskHandler = this.doneAddNewTask.bind(this);
-				this.model.doneAddNewTask.fire(this.doneAddNewTaskHandler);
-				this.deleteTaskHandler = this.doneDeleteTask.bind(this);
-				this.model.doneDeleteTask.fire(this.deleteTaskHandler);
-				this.doneUserStateHandler = this.doneUserState.bind(this);
-				this.model.doneUserState.fire(this.doneUserStateHandler);
+			subscribeEvent : function (taskName){
+				this.pubSub.subscribe('doneAddNewTask', this.doneAddNewTask);
+				this.pubSub.subscribe('doneTasksChangeState', this.doneTasksChangeState);
+				this.pubSub.subscribe('doneDeleteTask', this.doneDeleteTask);
+				this.pubSub.subscribe('doneUserState', this.doneUserState);
 			},
 			selectOrUnselectTask: function () {
 				var taskID = event.target.id.split("-");
 				if (event.target.checked == true){
-					this.selectTaskEvent.subscribe({
-						taskID: taskID[1]
-					});
+					viewObjs.pubSub.publish('selectTask', taskID[1]);
 				} else {
-					this.unselectTaskEvent.subscribe({
-						taskID: taskID[1]
-					});
+					viewObjs.pubSub.publish('unselectTask', taskID[1]);
 				}
 			},
 			deleteTask: function () {
 				var taskID = event.target.id.split("-");
-				this.deleteTaskEvent.subscribe({
-					taskID: taskID[1]
-				});
+				viewObjs.pubSub.publish('deleteTask', taskID[1]);
 			},
 			doneDeleteTask: function () {
-				this.generateTaskUI();
+				viewObjs.generateTaskUI();
 			},
 			doneTasksChangeState: function () {
-				this.generateTaskUI();
+				viewObjs.generateTaskUI();
 			},
 			doneAddNewTask: function () {
-				this.clearTaskInput();
-				this.generateTaskUI();
+				viewObjs.clearTaskInput();
+				viewObjs.generateTaskUI();
 			},
 			loginUser: function () {
-				this.loginUserEvent.subscribe({
-					credential : this.getUserNameAndPasswordInput()
-				});
+				viewObjs.pubSub.publish('loginUser', viewObjs.getUserNameAndPasswordInput());
 			},
 			logOutUser : function () {
-				this.logOutUserEvent.subscribe();
+				viewObjs.pubSub.publish('logOutUser');
 			},
 			doneUserState: function () {
 				location.reload();

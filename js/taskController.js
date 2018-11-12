@@ -1,29 +1,23 @@
 	
-var taskController = function (model, view) {
+var taskController = function (model, view,pubSub) {
 	this.model=model;
 	this.view=view;
+	this.pubSub=pubSub;
 	this.init();
+	controllerObjs=this;
 };
 	taskController.prototype = {
 		init :function () {
 			this.setupHandlers();
-			this.fireEvent();
+			this.publishEvent();
 		},
-		setupHandlers : function  (){
-			this.selectTaskHandler = this.selectTask.bind(this);
-			this.unselectTaskHandler = this.unselectTask.bind(this);
-			this.addTaskEventHandler = this.addNewTask.bind(this);
-			this.deleteTaskHandler = this.deleteTask.bind(this);
-			this.loginUserHandler = this.loginUser.bind(this);
-			this.logOutUserHandler = this.logOutUser.bind(this);
-		},
-		fireEvent : function (taskName){
-			this.view.selectTaskEvent.fire(this.selectTaskHandler);
-			this.view.unselectTaskEvent.fire(this.unselectTaskHandler);
-			this.view.addNewTaskEvent.fire(this.addTaskEventHandler);
-			this.view.deleteTaskEvent.fire(this.deleteTaskHandler);
-			this.view.loginUserEvent.fire(this.loginUserHandler);
-			this.view.logOutUserEvent.fire(this.logOutUserHandler);
+		publishEvent : function (taskName){
+			this.pubSub.subscribe('addNewTask', this.addNewTask);
+			this.pubSub.subscribe('selectTask', this.selectTask);
+			this.pubSub.subscribe('unselectTask', this.unselectTask);
+			this.pubSub.subscribe('deleteTask', this.deleteTask);
+			this.pubSub.subscribe('loginUser', this.unselectTask);
+			this.pubSub.subscribe('logOutUser', this.unselectTask);
 		},
 		getUserID : function (userName,password){
 			var taskFunc=this;
@@ -37,33 +31,32 @@ var taskController = function (model, view) {
 			else 
 				return findUser;
 		},
-		selectTask: function (sender, args) {
-			this.model.selectTask(args.taskID);
+		selectTask: function (args) {
+			controllerObjs.model.selectTask(args);
 		},
-		unselectTask: function (sender, args) {
-			this.model.unselectTask(args.taskID);
+		unselectTask: function (args) {
+			controllerObjs.model.unselectTask(args);
 		},
-		deleteTask: function (sender, args) {
-			this.model.deleteTask(args.taskID);
+		deleteTask: function (args) {
+			controllerObjs.model.deleteTask(args);
 		},
-		addNewTask: function (sender, args) {
-			this.model.addNewTask(args.taskTitle);
+		addNewTask: function (args) {
+			controllerObjs.model.addNewTask(args);
 		},
-		loginUser : function (sender, args) {
+		loginUser : function (args) {
 			var fields = args.credential.split('-');
 			if(fields[0] || fields[1]){
-				if(this.getUserID(fields[0],fields[1])!==0){
-					console.log(this.getUserID(fields[0],fields[1]));
-					this.model.loginUser(this.getUserID(fields[0],fields[1]));
+				if(controllerObjs.getUserID(fields[0],fields[1])!==0){
+					controllerObjs.model.loginUser(controllerObjs.getUserID(fields[0],fields[1]));
 				}else
-					this.view.errorMessage(1);
+					controllerObjs.view.errorMessage(1);
 			}else{
-					this.view.errorMessage(1);
+					controllerObjs.view.errorMessage(1);
 			}  
 			
 		},
-		logOutUser : function (sender, args) {
+		logOutUser : function (args) {
 			console.log(args);
-				this.model.logOutUser();
+				controllerObjs.model.logOutUser();
 		},
 }

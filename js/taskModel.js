@@ -1,16 +1,10 @@
-var taskModel = function () {
+var taskModel = function (pubSub) {
 	this.todos = JSON.parse(localStorage.getItem('taskJson') || '[]');
 	this.users=[{ ID:101, userName: "ali",password: "123456"},{ ID:102, userName: "reza",password: "123456"}];
-	this.doneTasksChangeState = new Event(this);
-	this.doneAddNewTask = new Event(this);
-	this.doneDeleteTask = new Event(this);
-	this.doneUserState = new Event(this);
+	this.pubSub=pubSub;
+	modelObj=this;
  };	
 taskModel.prototype = {
-	fireEvent : function (taskName){
-			this.view.selectTaskEvent.fire(this.selectTaskHandler);
-			this.view.unselectTaskEvent.fire(this.unselectTaskHandler);
-	},
 	getCurrenttUser : function (){
 		return localStorage.getItem('loginID');
 	},
@@ -71,31 +65,32 @@ taskModel.prototype = {
 		found = this.getTaskByID(taskID);
 		this.todos[found].is_completed="1";
 		localStorage.setItem("taskJson", JSON.stringify(this.todos));
-		this.doneTasksChangeState.subscribe();
+		modelObj.pubSub.publish('doneTasksChangeState');
 	},
 	unselectTask: function (taskID) {
 		found = this.getTaskByID(taskID);
 		this.todos[found].is_completed="0";
 		localStorage.setItem("taskJson", JSON.stringify(this.todos));
-		this.doneTasksChangeState.subscribe();
+		modelObj.pubSub.publish('doneTasksChangeState');
 	},
 	addNewTask : function (taskTitle){
-		this.todos.push({ID:this.getLastTaskID(),userID:this.getCurrenttUser(),value:taskTitle,is_completed: '0'});
-		localStorage.setItem("taskJson", JSON.stringify(this.todos));
-		this.doneAddNewTask.subscribe();
+		modelObj.todos.push({ID:modelObj.getLastTaskID(),userID:modelObj.getCurrenttUser(),value:taskTitle,is_completed: '0'});
+		localStorage.setItem("taskJson", JSON.stringify(modelObj.todos));
+		modelObj.pubSub.publish('doneAddNewTask');
 	},
 	deleteTask : function (taskID) {
 		var found = this.getTaskByID(taskID);
-		this.todos.splice(found, 1);
-		localStorage.setItem("taskJson", JSON.stringify(this.todos));
-		this.doneDeleteTask.subscribe();
+		modelObj.todos.splice(found, 1);
+		localStorage.setItem("taskJson", JSON.stringify(modelObj.todos));
+		modelObj.pubSub.publish('doneDeleteTask');
 	},
 	loginUser : function (args) {
 		localStorage.setItem("loginID", args);
-		this.doneUserState.subscribe();
+		modelObj.pubSub.publish('doneUserState');
 	},
 	logOutUser : function () {
 		localStorage.setItem("loginID", "null");
-		this.doneUserState.subscribe();
-	},
+		modelObj.pubSub.publish('doneUserState');
+	}
+	
 };

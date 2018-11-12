@@ -1,14 +1,25 @@
-var Event = function (sender) {
-    this.sender = sender;
-    this.listeners = [];
+var PubSub=function(){
+    this.pubSub = {};
+    this.topics = {};
+    this.uid = 0;
 }
-Event.prototype = {
-    fire: function (listener) {
-        this.listeners.push(listener);
+PubSub.prototype = {
+    subscribe : function(topic, callback) {
+      if(!this.topics[topic])
+        this.topics[topic] = [];
+      var curUid = this.uid.toString();
+      this.topics[topic].push({
+        uid: curUid,
+        callback: callback
+      });
+      this.uid++;
+      return curUid;
     },
-    subscribe: function (args) {
-        for (var i = 0; i < this.listeners.length; i++) {
-            this.listeners[i](this.sender, args);
-        }
+    publish : function(topic, args) {
+      if(!this.topics[topic])
+        return false;
+      this.topics[topic].forEach(function(sub) {
+        sub.callback(args);
+      });
     }
-};
+ };
