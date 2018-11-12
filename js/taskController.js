@@ -8,7 +8,6 @@ var taskController = function (model, view,pubSub) {
 };
 	taskController.prototype = {
 		init :function () {
-			this.setupHandlers();
 			this.publishEvent();
 		},
 		publishEvent : function (taskName){
@@ -16,8 +15,8 @@ var taskController = function (model, view,pubSub) {
 			this.pubSub.subscribe('selectTask', this.selectTask);
 			this.pubSub.subscribe('unselectTask', this.unselectTask);
 			this.pubSub.subscribe('deleteTask', this.deleteTask);
-			this.pubSub.subscribe('loginUser', this.unselectTask);
-			this.pubSub.subscribe('logOutUser', this.unselectTask);
+			this.pubSub.subscribe('loginUser', this.loginUser);
+			this.pubSub.subscribe('logOutUser', this.logOutUser);
 		},
 		getUserID : function (userName,password){
 			var taskFunc=this;
@@ -56,7 +55,6 @@ var taskController = function (model, view,pubSub) {
 			
 		},
 		logOutUser : function (args) {
-			console.log(args);
 				controllerObjs.model.logOutUser();
 		},
 }
