@@ -61,28 +61,32 @@ taskModel.prototype = {
 		}
 		return maxTaskID;
 	},
-	selectTask: function (taskID) {
+	completeTask: function (taskID) {
 		found = this.getTaskByID(taskID);
 		this.todos[found].is_completed="1";
 		localStorage.setItem("taskJson", JSON.stringify(this.todos));
-		modelObj.pubSub.publish('doneTasksChangeState');
+		modelObj.pubSub.publish('doneTasksSetToComplete',taskID);
 	},
-	unselectTask: function (taskID) {
+	uncompleteTask: function (taskID) {
 		found = this.getTaskByID(taskID);
 		this.todos[found].is_completed="0";
 		localStorage.setItem("taskJson", JSON.stringify(this.todos));
-		modelObj.pubSub.publish('doneTasksChangeState');
+		modelObj.pubSub.publish('doneTasksSetToUnComplete',taskID);
 	},
 	addNewTask : function (taskTitle){
-		modelObj.todos.push({ID:modelObj.getLastTaskID(),userID:modelObj.getCurrenttUser(),value:taskTitle,is_completed: '0'});
+		var generateTaskForView=[];
+		var taskID=modelObj.getLastTaskID();
+		var userID=modelObj.getCurrenttUser();
+		modelObj.todos.push({ID:taskID,userID:userID,value:taskTitle,is_completed: '0'});
 		localStorage.setItem("taskJson", JSON.stringify(modelObj.todos));
-		modelObj.pubSub.publish('doneAddNewTask');
+		generateTaskForView.push({taskID:taskID,taskTitle:taskTitle});
+		modelObj.pubSub.publish('doneAddNewTask',generateTaskForView);
 	},
 	deleteTask : function (taskID) {
 		var found = this.getTaskByID(taskID);
 		modelObj.todos.splice(found, 1);
 		localStorage.setItem("taskJson", JSON.stringify(modelObj.todos));
-		modelObj.pubSub.publish('doneDeleteTask');
+		modelObj.pubSub.publish('doneDeleteTask',taskID);
 	},
 	loginUser : function (args) {
 		localStorage.setItem("loginID", args);

@@ -1,7 +1,6 @@
 	var taskView=function(model,pubSub){
 		this.model=model;
 		this.pubSub=pubSub;
-
 		this.taskInput = document.querySelector("#addNewTask");
 		this.allTaskButton = document.querySelector("#allTaskButton");
 		this.completeTaskButton = document.querySelector("#completeTaskButton");
@@ -9,11 +8,9 @@
 		this.loginUserBtn = document.querySelector("#login");
 		this.logOutUserBtn = document.querySelector("#logout");
 		this.ulBody = document.querySelector('#appendTask');
-		
 		this.eventJson=[];
 		this.init();
 		viewObjs=this;
-		
 	};	
 	taskView.prototype = {
 		init :function () {
@@ -21,16 +18,11 @@
 					document.getElementById("loginShow").style.display = "none";
 					document.getElementById("taskShow").style.display = "block";
 					document.getElementById("userWelcome").innerHTML = this.model.getUserByID();
-					
 					this.allTaskButton.addEventListener("click", this.filterTask.bind(this,"all"));					
 					this.completeTaskButton.addEventListener("click", this.filterTask.bind(this,"complete"));
 					this.activeTaskButton.addEventListener("click", this.filterTask.bind(this,"active"));
-					
-					
 					this.generateTaskUI();
-						
 					this.subscribeEvent();
-					
 				} else {
 				   document.getElementById("loginShow").style.display = "block";
 				   document.getElementById("taskShow").style.display = "none";
@@ -59,26 +51,18 @@
 							taskChecked = "";
 							taskLiclassName="all active";
 						}
-						ulBodytaskHtml='<li class="'+taskLiclassName+'"><input id="taskRecord-'+task['taskID']+'"  class="taskRows" type="checkbox"'+ taskChecked+'><label>'+task['taskTitle']+'</label><img id="taskRecord-'+task['taskID']+'"  class="deleteTask" src="img/cross.png"></li>';
+						ulBodytaskHtml='<li id="taskRow-'+task['taskID']+'" class="'+taskLiclassName+'"><input id="taskRecord-'+task['taskID']+'"  class="taskRows" type="checkbox"'+ taskChecked+'><label>'+task['taskTitle']+'</label><img id="taskRecord-'+task['taskID']+'"  class="deleteTask" src="img/cross.png"></li>';
 						taskFunc.ulBody.insertAdjacentHTML("beforeend",ulBodytaskHtml);
 					}
 				)
 				this.setupHandlers();
-			},
-			getTaskRecordStatus : function(elementID) {
-				var taskCheckBox = document.querySelector("#taskRecord-"+elementID+" input");
-				if (taskCheckBox.checked == true){
-					return true;
-				} else {
-					return false;
-				}
 			},
 			setupHandlers: function () {
 				var viewObj=this;
 
 				var taskRowsCheckBox = document.querySelectorAll('.taskRows');
 				for (var i = 0; i < taskRowsCheckBox.length; i++) {
-					taskRowsCheckBox[i].addEventListener("change", this.selectOrUnselectTask.bind(this));
+					taskRowsCheckBox[i].addEventListener("change", this.completeOrUnCompleteTask.bind(this));
 				}
 				var taskRowsDelete = document.querySelectorAll('.deleteTask');
 				for (var i = 0; i < taskRowsDelete.length; i++) {
@@ -101,31 +85,38 @@
 			},
 			subscribeEvent : function (taskName){
 				this.pubSub.subscribe('doneAddNewTask', this.doneAddNewTask);
-				this.pubSub.subscribe('doneTasksChangeState', this.doneTasksChangeState);
+				this.pubSub.subscribe('doneTasksSetToComplete', this.doneTasksSetToComplete);
+				this.pubSub.subscribe('doneTasksSetToUnComplete', this.doneTasksSetToUnComplete);
 				this.pubSub.subscribe('doneDeleteTask', this.doneDeleteTask);
 				this.pubSub.subscribe('doneUserState', this.doneUserState);
+				this.pubSub.subscribe('errorMessage', this.errorMessage);
 			},
-			selectOrUnselectTask: function () {
+			completeOrUnCompleteTask: function () {
 				var taskID = event.target.id.split("-");
 				if (event.target.checked == true){
-					viewObjs.pubSub.publish('selectTask', taskID[1]);
+					viewObjs.pubSub.publish('completeTask', taskID[1]);
 				} else {
-					viewObjs.pubSub.publish('unselectTask', taskID[1]);
+					viewObjs.pubSub.publish('uncompleteTask', taskID[1]);
 				}
 			},
 			deleteTask: function () {
 				var taskID = event.target.id.split("-");
 				viewObjs.pubSub.publish('deleteTask', taskID[1]);
 			},
-			doneDeleteTask: function () {
-				viewObjs.generateTaskUI();
+			doneDeleteTask: function (args) {
+				var elem = document.getElementById('taskRow-'+args);
+				return elem.parentNode.removeChild(elem);
 			},
-			doneTasksChangeState: function () {
-				viewObjs.generateTaskUI();
+			doneTasksSetToComplete: function (args) {
+				document.getElementById("taskRow-"+args).className = "all complete";
 			},
-			doneAddNewTask: function () {
+			doneTasksSetToUnComplete: function (args) {
+				document.getElementById("taskRow-"+args).className = "all active";
+			},
+			doneAddNewTask: function (args) {
 				viewObjs.clearTaskInput();
-				viewObjs.generateTaskUI();
+				ulBodytaskHtml='<li id="taskRow-'+args[0].taskID+'" class="all active"><input id="taskRecord-'+args[0].taskID+'"  class="taskRows" type="checkbox"><label>'+args[0].taskTitle+'</label><img id="taskRecord-'+args[0].taskID+'"  class="deleteTask" src="img/cross.png"></li>';
+				viewObjs.ulBody.insertAdjacentHTML("beforeend",ulBodytaskHtml);
 			},
 			loginUser: function () {
 				viewObjs.pubSub.publish('loginUser', viewObjs.getUserNameAndPasswordInput());

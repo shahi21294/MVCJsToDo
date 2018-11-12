@@ -1,19 +1,18 @@
 	
-var taskController = function (model, view,pubSub) {
+var taskController = function (model,pubSub) {
 	this.model=model;
-	this.view=view;
 	this.pubSub=pubSub;
 	this.init();
 	controllerObjs=this;
 };
 	taskController.prototype = {
 		init :function () {
-			this.publishEvent();
+			this.subscribeEvent();
 		},
-		publishEvent : function (taskName){
+		subscribeEvent : function (taskName){
 			this.pubSub.subscribe('addNewTask', this.addNewTask);
-			this.pubSub.subscribe('selectTask', this.selectTask);
-			this.pubSub.subscribe('unselectTask', this.unselectTask);
+			this.pubSub.subscribe('completeTask', this.completeTask);
+			this.pubSub.subscribe('uncompleteTask', this.uncompleteTask);
 			this.pubSub.subscribe('deleteTask', this.deleteTask);
 			this.pubSub.subscribe('loginUser', this.loginUser);
 			this.pubSub.subscribe('logOutUser', this.logOutUser);
@@ -30,11 +29,11 @@ var taskController = function (model, view,pubSub) {
 			else 
 				return findUser;
 		},
-		selectTask: function (args) {
-			controllerObjs.model.selectTask(args);
+		completeTask: function (args) {
+			controllerObjs.model.completeTask(args);
 		},
-		unselectTask: function (args) {
-			controllerObjs.model.unselectTask(args);
+		uncompleteTask: function (args) {
+			controllerObjs.model.uncompleteTask(args);
 		},
 		deleteTask: function (args) {
 			controllerObjs.model.deleteTask(args);
@@ -48,11 +47,10 @@ var taskController = function (model, view,pubSub) {
 				if(controllerObjs.getUserID(fields[0],fields[1])!==0){
 					controllerObjs.model.loginUser(controllerObjs.getUserID(fields[0],fields[1]));
 				}else
-					controllerObjs.view.errorMessage(1);
+					controllerObjs.pubSub.publish('errorMessage',1);
 			}else{
-					controllerObjs.view.errorMessage(1);
+					controllerObjs.pubSub.publish('errorMessage',1);
 			}  
-			
 		},
 		logOutUser : function (args) {
 				controllerObjs.model.logOutUser();
