@@ -43,7 +43,7 @@ var taskController = function (model, view,pubSub) {
 			controllerObjs.model.addNewTask(args);
 		},
 		loginUser : function (args) {
-			var fields = args.credential.split('-');
+			var fields = args.split('-');
 			if(fields[0] || fields[1]){
 				if(controllerObjs.getUserID(fields[0],fields[1])!==0){
 					controllerObjs.model.loginUser(controllerObjs.getUserID(fields[0],fields[1]));
